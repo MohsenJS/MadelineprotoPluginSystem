@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
+use MohsenJS\Console\ListPluginCommand;
+use MohsenJS\Console\MakePluginCommand;
+use MohsenJS\Console\RemovePluginCommand;
+use Symfony\Component\Console\Application;
+
+if (PHP_SAPI !== 'cli') {
+    exit;
+}
+
+$app = new Application('MadelineProto Plugin System', '1.0');
+
+$app->add(new MakePluginCommand());
+$app->add(new RemovePluginCommand());
+$app->add(new ListPluginCommand());
+
+$app->run();

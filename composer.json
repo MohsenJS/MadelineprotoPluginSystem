@@ -1,0 +1,21 @@
+{
+    "name": "mohsenjs/madelineproto-plugin-system",
+    "description": "plugin system for MadelineProto",
+    "type": "project",
+    "require": {
+        "symfony/console": "^5.0",
+        "danog/madelineproto": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "MohsenJS\\": "src/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "MohsenJS",
+            "email": "mohsenjs@protonmail.com"
+        }
+    ]
+}

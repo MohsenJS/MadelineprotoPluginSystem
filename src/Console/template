@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MohsenJS\Plugins\%sPlugins;
+
+use MohsenJS\Plugins\%sPlugin;
+
+final class %s extends %sPlugin
+{
+    /**
+     * The name and signature of the plugin.
+     *
+     * @var string
+     */
+    protected $name = '%s';
+
+    /**
+     * The plugin description.
+     *
+     * @var string
+     */
+    protected $description = '%s';
+
+    /**
+     * The plugin regex pattern.
+     *
+     * @var string
+     */
+    protected $pattern = '%s';
+
+    /**
+     * The plugin usage.
+     * This will help the user to find out how to use this plugin.
+     *
+     * @var string
+     */
+    protected $usage = '%s';
+
+    public function execute(): \Generator
+    {
+        # code...
+    }
+}
