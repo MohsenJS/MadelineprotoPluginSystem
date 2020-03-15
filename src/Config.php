@@ -8,6 +8,7 @@ final class Config
 {
     /**
      * the user id of admins.
+     * e.g. 123456789
      */
     public const ADMINS = [];
 
