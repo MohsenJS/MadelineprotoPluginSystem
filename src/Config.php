@@ -8,7 +8,7 @@ final class Config
 {
     /**
      * the user id of admins.
-     * e.g. 123456789
+     * e.g. 123456789.
      */
     public const ADMINS = [];
 
@@ -19,7 +19,8 @@ final class Config
      */
     public const SETTINGS = [
         'serialization' => [
-            'serialization_interval' => 30,
+            'serialization_interval'       => 300,
+            'cleanup_before_serialization' => true,
         ],
     ];
 

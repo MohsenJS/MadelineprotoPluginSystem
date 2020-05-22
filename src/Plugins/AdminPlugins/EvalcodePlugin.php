@@ -152,9 +152,9 @@ final class EvalcodePlugin extends AdminPlugin
         $message === '' && $message = 'An error occurred :(';
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => $message,
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
             'parse_mode'      => 'HTML',
         ]);
     }
@@ -174,16 +174,16 @@ final class EvalcodePlugin extends AdminPlugin
     /**
      * Run the code and return the result.
      *
-     * @param array $parms
+     * @param array $params
      *
      * @return \Generator
      */
-    private function runCode(array $parms): \Generator
+    private function runCode(array $params): \Generator
     {
         $client  = HttpClientBuilder::buildDefault();
         $request = new Request(self::REXTESTER_URL, 'POST');
         $request->setHeader('Content-Type', 'application/x-www-form-urlencoded');
-        $request->setBody(\http_build_query($parms));
+        $request->setBody(\http_build_query($params));
 
         /**
          * @var Response $response
@@ -203,7 +203,7 @@ final class EvalcodePlugin extends AdminPlugin
      *
      * @return array
      */
-    private function getParms(int $langCode): array
+    private function getParams(int $langCode): array
     {
         return [
             'LanguageChoice' => $langCode,
@@ -226,10 +226,10 @@ final class EvalcodePlugin extends AdminPlugin
         }
 
         $message = '';
-        $result  = yield $this->runCode($this->getParms($langCode));
+        $result  = yield $this->runCode($this->getParams($langCode));
         foreach (['Result', 'Errors', 'Warnings'] as $key) {
             if ($result[$key] ?? false) {
-                $message .= sprintf(
+                $message .= \sprintf(
                     '<b>%s:</b><br><pre>%s</pre><br><br>',
                     $key,
                     Tools::clean($result[$key], 'html')

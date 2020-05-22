@@ -41,7 +41,7 @@ final class MakePluginCommand extends Command
         $role        = Validator::validateRole((string) $input->getOption('role'));
 
         if ($this->generatePluginFile($name, $description, $pattern, $usage, $role) === false) {
-            throw new \RuntimeException('an error occoured');
+            throw new \RuntimeException('an error occurred');
         }
 
         $output->writeln('<info>Plugin added successfully.</info>');
@@ -175,11 +175,11 @@ final class MakePluginCommand extends Command
             throw new RuntimeException(\sprintf('Could not find "template" file in "%s"', __DIR__));
         }
 
-        $writed = \file_put_contents(
+        $writhed = \file_put_contents(
             $fileName,
             \sprintf($template, $role, $role, $className, $role, \strtolower($name), $description, $pattern, $usage)
         );
 
-        return $writed === false ? false : true;
+        return $writhed === false ? false : true;
     }
 }

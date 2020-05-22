@@ -44,7 +44,7 @@ final class ShutdownPlugin extends AdminPlugin
     public function execute(): \Generator
     {
         $name    = yield $this->getUserFullName('HTML');
-        $user_id = $this->getFromId();
+        $user_id = $this->MadelineProto->update->getFromId();
         $params  = [];
         foreach (Config::ADMINS as $admin) {
             $params[] = [
@@ -58,7 +58,7 @@ final class ShutdownPlugin extends AdminPlugin
         try {
             yield $this->MadelineProto->messages->sendMessage($params);
         } catch (\Throwable $error) {
-            Logger::log($error->getMessage(), Logger::ERROR);
+            $this->MadelineProto->logger($error->getMessage(), Logger::ERROR);
         }
 
         Magic::shutdown();
@@ -73,7 +73,7 @@ final class ShutdownPlugin extends AdminPlugin
      */
     private function getUserFullName(?string $cleanMode = null): \Generator
     {
-        $info     = yield $this->MadelineProto->getInfo($this->update);
+        $info     = yield $this->MadelineProto->getInfo($this->MadelineProto->update->getUpdate());
         $fullName = (string) ($info['User']['first_name'] ?? 'No Name');
         isset($info['User']['last_name']) && $fullName .= ' ' . $info['User']['last_name'];
         if ($cleanMode !== null) {

@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace MohsenJS;
 
-abstract class Update
+final class Update
 {
     /**
      * incoming update.
      *
      * @var array
      */
-    protected $update = [];
+    public $update = [];
 
     /**
-     * Update contructor.
+     * Update constructor.
      *
      * @param array $update
      */

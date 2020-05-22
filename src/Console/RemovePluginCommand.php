@@ -35,7 +35,7 @@ final class RemovePluginCommand extends Command
         $role = Validator::validateRole((string) $input->getOption('role'));
 
         if (! $this->removePluginFile($name, $role)) {
-            throw new RuntimeException('an error occoured');
+            throw new RuntimeException('an error occurred');
         }
 
         $output->writeln('<info>Plugin deleted successfully.</info>');
@@ -106,7 +106,7 @@ final class RemovePluginCommand extends Command
 
         if (! Validator::pluginFileExists($fileName, $role)) {
             throw new RuntimeException(
-                \sprintf('File "%s" dosen\'t exists.', $fileName)
+                \sprintf('File "%s" doesn\'t exists.', $fileName)
             );
         }
 

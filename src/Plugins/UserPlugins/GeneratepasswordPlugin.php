@@ -47,9 +47,9 @@ final class GeneratepasswordPlugin extends UserPlugin
     public function execute(): \Generator
     {
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => "<code>{$this->generatePassword()}</code>",
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
             'parse_mode'      => 'HTML',
         ]);
     }

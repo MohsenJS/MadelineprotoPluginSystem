@@ -7,32 +7,44 @@ namespace MohsenJS;
 use MohsenJS\Plugins\Plugin;
 use danog\MadelineProto\Logger;
 
-use function Amp\File\isdir;
-
 final class EventHandler extends \danog\MadelineProto\EventHandler
 {
     /**
      * Current Update.
      *
-     * @var array
+     * @var Update
      */
-    protected $update = [];
+    public $update;
 
     /**
-     * Custom plugins paths.
+     * All Plugins.
      *
-     * @var string[]
+     * @var array
      */
-    protected $plugins_paths = [];
+    public $plugins = [
+        'admin_plugin' => [],
+        'user_plugin'  => [],
+    ];
 
     /**
      * Get peer(s) where to report errors.
      *
-     * @return int|string|array
+     * @return array
      */
-    public function getReportPeers()
+    public function getReportPeers(): array
     {
         return Config::ADMINS;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return \Generator
+     */
+    public function onStart(): \Generator
+    {
+        $this->plugins['admin_plugin'] = yield $this->getPlugins(Config::PLUGIN_PATH . 'AdminPlugins');
+        $this->plugins['user_plugin']  = yield $this->getPlugins(Config::PLUGIN_PATH . 'UserPlugins');
     }
 
     /**
@@ -44,8 +56,7 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
      */
     public function onUpdateNewChannelMessage(array $update): \Generator
     {
-        $this->update = $update;
-        yield $this->run();
+        return $this->onUpdateNewMessage($update);
     }
 
     /**
@@ -57,7 +68,7 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
      */
     public function onUpdateNewMessage(array $update): \Generator
     {
-        $this->update = $update;
+        $this->update = new Update($update);
         yield $this->run();
     }
 
@@ -70,78 +81,60 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
     {
         $plugin_obj = yield $this->userHaveActiveConversation();
         if ($plugin_obj === null) {
-            if ($this->isAdmin()) {
-                yield $this->addPluginsPath(Config::PLUGIN_PATH . 'AdminPlugins');
-            }
-            yield $this->addPluginsPath(Config::PLUGIN_PATH . 'UserPlugins');
-            $plugin_obj = $this->checkMessage();
+            $plugin_obj = $this->checkMessage($this->isAdmin());
         }
 
-        if ($plugin_obj !== null && $plugin_obj->isEnabled()) {
+        if ($plugin_obj !== null) {
             try {
                 yield $plugin_obj->execute();
             } catch (\Throwable $error) {
-                Logger::log($error->getMessage(), Logger::ERROR);
+                $this->logger($error->getMessage(), Logger::ERROR);
             }
         }
     }
 
     /**
-     * check current user have an acive conversation or not.
+     * check current user have an active conversation or not.
      *
-     * @return \Generator `Plugin` object if the current user have an acive conversation, `null` otherwise
+     * @return \Generator `Plugin` object if the current user have an active conversation, `null` otherwise
      */
     public function userHaveActiveConversation(): \Generator
     {
-        if (isset($this->update['message']['from_id'])) {
-            $Conversation = new Conversation((int) $this->update['message']['from_id']);
-            yield $Conversation->start();
-            if ($Conversation->haveConversation()) {
-                return $this->getPluginObject((string) $Conversation->getSavedPlugin());
-            }
+        $Conversation = new Conversation($this->update->getFromId());
+        yield $Conversation->start();
+        if ($Conversation->haveConversation()) {
+            return $this->getPluginObject($Conversation->getSavedPlugin());
         }
 
         return null;
     }
 
     /**
-     * Add a custom plugins path.
+     * Get plugin object of entered path.
      *
-     * @param string $path Custom plugins path to add
+     * @param string $path
      *
-     * @return \Generator
+     * @return Plugin[]
      */
-    public function addPluginsPath(string $path): \Generator
+    public function getPlugins(string $path)
     {
-        if (yield isdir($path) && ! \in_array($path, $this->plugins_paths, true)) {
-            $this->plugins_paths[] = $path;
-        }
-    }
-
-    /**
-     * Get the list of plugins.
-     *
-     * @return \Generator<Plugin>
-     */
-    public function getPluginsList(): \Generator
-    {
-        foreach ($this->plugins_paths as $path) {
-            $files = new \RegexIterator(
-                new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)),
-                '/^.+Plugin.php$/'
-            );
-            /**
-             * @var \DirectoryIterator[] $files
-             */
-            foreach ($files as $file) {
-                $plugin = Tools::sanitizePlugin(\substr($file->getFilename(), 0, -10));
-                include_once $file->getPathname();
-                $plugin_obj = $this->getPluginObject($plugin);
-                if ($plugin_obj instanceof Plugin) {
-                    yield $plugin_obj;
-                }
+        $plugins = [];
+        $files   = new \RegexIterator(
+            new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)),
+            '/^.+Plugin.php$/'
+        );
+        /**
+         * @var \DirectoryIterator[] $files
+         */
+        foreach ($files as $file) {
+            $plugin     = Tools::sanitizePlugin(\substr($file->getFilename(), 0, -10));
+            $plugin_obj = $this->getPluginObject($plugin);
+            if ($plugin_obj instanceof Plugin) {
+                $plugins[] = $plugin_obj;
             }
         }
+
+        return $plugins;
     }
 
     /**
@@ -153,18 +146,12 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
      */
     public function getPluginObject(string $plugin): ?Plugin
     {
-        $which = [];
-        if ($this->isAdmin()) {
-            $which[] = 'Admin';
-        }
-        $which[] = 'User';
-
         /** @var string $auth plugin role */
-        foreach ($which as $auth) {
+        foreach (['Admin', 'User'] as $auth) {
             $plugin_namespace = __NAMESPACE__ . '\\Plugins\\' . $auth . 'Plugins\\' .
                 Tools::ucfirstUnicode($plugin) . 'Plugin';
             if (\class_exists($plugin_namespace)) {
-                return new $plugin_namespace($this, $this->update);
+                return new $plugin_namespace($this);
             }
         }
 
@@ -176,15 +163,21 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
      *
      * @return Plugin|null `Plugin` object if the pattern matches incoming text, `null` otherwise
      */
-    public function checkMessage(): ?Plugin
+    public function checkMessage(bool $is_admin = false): ?Plugin
     {
-        foreach ($this->getPluginsList() as $plugin) {
-            if (@\preg_match($plugin->getPattern(), $plugin->getText(), $matches) && $plugin->isEnabled()) {
-                if ($matches !== null) {
+        foreach ($this->plugins as $role => $plugins) {
+            if ($is_admin === false && $role === 'admin_plugin') {
+                continue;
+            }
+            /**
+             * @var Plugin $plugin
+             */
+            foreach ($plugins as $plugin) {
+                if (@\preg_match($plugin->getPattern(), $this->update->getText(), $matches) && $plugin->isEnabled()) {
                     $plugin->setMatches($matches);
-                }
 
-                return $plugin;
+                    return $plugin;
+                }
             }
         }
 
@@ -202,9 +195,7 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
      */
     public function isAdmin(?int $user_id = null): bool
     {
-        if ($user_id === null) {
-            $user_id = $this->update['message']['from_id'] ?? null;
-        }
+        $user_id = $user_id ?? $this->update->getFromId();
 
         return \in_array($user_id, Config::ADMINS);
     }

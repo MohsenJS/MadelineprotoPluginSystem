@@ -42,15 +42,15 @@ final class RestartPlugin extends AdminPlugin
      *
      * @var bool
      */
-    protected $enabled = false;
+    protected $enabled = true;
 
     public function execute(): \Generator
     {
         yield $this->MadelineProto->restart();
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => 'The bot successfully restarted.',
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
     }
 }

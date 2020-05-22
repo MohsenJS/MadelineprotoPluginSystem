@@ -88,7 +88,7 @@ final class Validator
     public static function validateRole(string $role): string
     {
         $role = Tools::ucfirstUnicode($role);
-        if (! in_array($role, ['Admin', 'User'])) {
+        if (! \in_array($role, ['Admin', 'User'])) {
             throw new InvalidArgumentException(\sprintf('"%s" is not a valid role.', $role));
         }
 

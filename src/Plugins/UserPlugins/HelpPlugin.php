@@ -46,29 +46,38 @@ final class HelpPlugin extends UserPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => $message,
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
             'parse_mode'      => 'HTML',
         ]);
     }
 
     /**
-     * Get all plugins help
+     * Get all plugins help.
      *
      * @return string on failure `empty string` will be returned
      */
     private function getHelpMessage(): string
     {
         $message = '';
-        foreach ($this->MadelineProto->getPluginsList() as $plugin) {
-            $message .= \sprintf(
-                '<b>%s</b><br>├ <b>Description:</b> %s<br>├ <b>Usage:</b> <pre>%s</pre><br>└ <b>Status:</b> %s<br><br>',
-                Tools::clean($plugin->getName(), 'html'),
-                Tools::clean($plugin->getDescription(), 'html'),
-                Tools::clean($plugin->getUsage(), 'html'),
-                $plugin->isEnabled() ? '✅ Active' : '❌ Inactive'
-            );
+        foreach ($this->MadelineProto->plugins as $role => $plugins) {
+            if ($this->MadelineProto->isAdmin() === false && $role === 'admin_plugin') {
+                continue;
+            }
+
+            /**
+             * @var \MohsenJS\Plugins\Plugin $plugin
+             */
+            foreach ($plugins as $plugin) {
+                $message .= \sprintf(
+                    '<b>%s</b><br>├ <b>Description:</b> %s<br>├ <b>Usage:</b> <pre>%s</pre><br>└ <b>Status:</b> %s',
+                    Tools::clean($plugin->getName(), 'html'),
+                    Tools::clean($plugin->getDescription(), 'html'),
+                    Tools::clean($plugin->getUsage(), 'html'),
+                    $plugin->isEnabled() ? '✅ Active' : '❌ Inactive'
+                ) . '<br><br>';
+            }
         }
 
         return $message;

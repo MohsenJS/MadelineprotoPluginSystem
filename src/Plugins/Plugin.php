@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace MohsenJS\Plugins;
 
-use MohsenJS\Update;
 use MohsenJS\EventHandler;
 
-abstract class Plugin extends Update
+abstract class Plugin
 {
     /**
      * MadelineProto object.
@@ -63,16 +62,14 @@ abstract class Plugin extends Update
      * Constructor.
      *
      * @param EventHandler $MadelineProto
-     * @param array        $update
      */
-    public function __construct(EventHandler $MadelineProto, array $update)
+    public function __construct(EventHandler $MadelineProto)
     {
         $this->MadelineProto = $MadelineProto;
-        parent::__construct($update);
     }
 
     /**
-     * Execute plugin
+     * Execute plugin.
      *
      * @return \Generator
      */
@@ -121,13 +118,13 @@ abstract class Plugin extends Update
     /**
      * Set the results of regex pattern.
      *
-     * @param string[] $matches
+     * @param string[]|null $matches
      *
      * @return void
      */
-    public function setMatches(array $matches): void
+    public function setMatches(?array $matches): void
     {
-        $this->matches = $matches;
+        $this->matches = \is_array($matches) ? $matches : [];
     }
 
     /**

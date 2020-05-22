@@ -44,14 +44,14 @@ final class PhpdocPlugin extends AdminPlugin
      *
      * @var bool
      */
-    protected $enabled = true;
+    protected $enabled = false;
 
     public function execute(): \Generator
     {
         $file = Config::DATA_PATH . \uniqid('tmp_' . \mt_rand(0, 100) . '_');
         yield File\put($file, $this->getPhpDoc());
         yield $this->MadelineProto->messages->sendMedia([
-            'peer'  => $this->getUpdate(),
+            'peer'  => $this->MadelineProto->update->getUpdate(),
             'media' => [
                 '_'          => 'inputMediaUploadedDocument',
                 'file'       => $file,
@@ -59,7 +59,7 @@ final class PhpdocPlugin extends AdminPlugin
                 'attributes' => [['_' => 'documentAttributeFilename', 'file_name' => "{$this->getMatches()[1]}.html"]],
             ],
             'message'         => '',
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
         yield File\unlink($file);
     }

@@ -50,7 +50,7 @@ final class BroadcastPlugin extends AdminPlugin
     {
         $message = 'An error occurred :(';
 
-        $user_id = $this->getFromId();
+        $user_id = $this->MadelineProto->update->getFromId();
         if ($user_id !== 0) {
             $this->conversation = new Conversation($user_id, $this->getName());
             yield $this->conversation->start();
@@ -58,9 +58,9 @@ final class BroadcastPlugin extends AdminPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => $message,
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
     }
 
@@ -69,15 +69,15 @@ final class BroadcastPlugin extends AdminPlugin
      *
      * @return \Generator
      */
-    private function brodcastMessage(): \Generator
+    private function broadcastMessage(): \Generator
     {
-        $method  = $this->getMessageType() === 'Text' ? 'sendMessage' : 'sendMedia';
+        $method  = $this->MadelineProto->update->getMessageType() === 'Text' ? 'sendMessage' : 'sendMedia';
         $params  = [];
 
         foreach (yield $this->MadelineProto->getDialogs() as $peer) {
-            $tmp = ['peer' => $peer, 'message' => $this->getText()];
+            $tmp = ['peer' => $peer, 'message' => $this->MadelineProto->update->getText()];
             if ($method === 'sendMedia') {
-                $tmp['media'] = $this->getUpdate();
+                $tmp['media'] = $this->MadelineProto->update->getUpdate();
             }
             $params[] = $tmp;
         }
@@ -86,7 +86,7 @@ final class BroadcastPlugin extends AdminPlugin
         try {
             yield $this->MadelineProto->messages->{$method}($params);
         } catch (\Throwable $error) {
-            Logger::log($error->getMessage(), Logger::ERROR);
+            $this->MadelineProto->logger($error->getMessage(), Logger::ERROR);
         }
 
         yield $this->conversation->stop();
@@ -106,12 +106,12 @@ final class BroadcastPlugin extends AdminPlugin
             return 'Please send the message that you want to send to all of your chats:' .
             PHP_EOL . 'Send "!stop" to cancel';
         }
-        if ($note === 'getUserMessage' && $this->getText() !== '!stop') {
-            yield $this->brodcastMessage();
+        if ($note === 'getUserMessage' && $this->MadelineProto->update->getText() !== '!stop') {
+            yield $this->broadcastMessage();
 
             return 'Message sent to all chats.';
         }
-        if ($note === 'getUserMessage' && $this->getText() === '!stop') {
+        if ($note === 'getUserMessage' && $this->MadelineProto->update->getText() === '!stop') {
             yield $this->conversation->stop();
 
             return 'Successfully canceled.';

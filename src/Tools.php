@@ -127,7 +127,7 @@ final class Tools
     }
 
     /**
-     * Create data folder if it dosen\'t exists.
+     * Create data folder if it doesn't exists.
      *
      * @return void
      */

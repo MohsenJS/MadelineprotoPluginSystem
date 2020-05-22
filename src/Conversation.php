@@ -30,7 +30,7 @@ final class Conversation
     private $user_id = 0;
 
     /**
-     * Conversation contructor to initialize a new conversation.
+     * Conversation constructor to initialize a new conversation.
      *
      * @param int    $user_id
      * @param string $plugin
@@ -42,7 +42,7 @@ final class Conversation
     }
 
     /**
-     * Start the Convertation.
+     * Start the Conversation.
      *
      * @return \Generator
      */
@@ -54,7 +54,7 @@ final class Conversation
     }
 
     /**
-     * Store the user note in the conversatin data.
+     * Store the user note in the conversation data.
      *
      * @param mixed $note
      *
@@ -100,11 +100,11 @@ final class Conversation
     /**
      * Retrieve the saved plugin name.
      *
-     * @return string|null
+     * @return string
      */
-    public function getSavedPlugin(): ?string
+    public function getSavedPlugin(): string
     {
-        return $this->data[$this->user_id]['plugin'] ?? null;
+        return $this->data[$this->user_id]['plugin'] ?? '';
     }
 
     /**

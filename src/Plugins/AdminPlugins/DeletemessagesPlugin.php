@@ -45,7 +45,7 @@ final class DeletemessagesPlugin extends AdminPlugin
 
         if ($canDelete && $isSupergroup) {
             yield $this->MadelineProto->messages->sendMessage([
-                'peer'    => $this->getUpdate(),
+                'peer'    => $this->MadelineProto->update->getUpdate(),
                 'message' => 'Deleting messages ...',
             ]);
             $countOfDeletedMessages = (int) yield $this->deleteMessages();
@@ -54,9 +54,9 @@ final class DeletemessagesPlugin extends AdminPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => $message,
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
     }
 
@@ -68,7 +68,7 @@ final class DeletemessagesPlugin extends AdminPlugin
     private function canDeleteMessage(): \Generator
     {
         $channelParticipant = yield $this->MadelineProto->channels->getParticipant([
-            'channel' => $this->getUpdate(),
+            'channel' => $this->MadelineProto->update->getUpdate(),
             'user_id' => 'me',
         ]);
 
@@ -85,19 +85,19 @@ final class DeletemessagesPlugin extends AdminPlugin
      */
     private function deleteMessages(): \Generator
     {
-        $inputNumber     = (int) $this->getMatches()[1];
-        $lastMessageForDelete = $this->getMessageId();
+        $inputNumber          = (int) $this->getMatches()[1];
+        $lastMessageForDelete = $this->MadelineProto->update->getMessageId();
 
         if ($lastMessageForDelete === 0) {
             return 0;
         }
 
         $firstMessageForDelete = $lastMessageForDelete - $inputNumber > 0 ? $lastMessageForDelete - $inputNumber : 1;
-        $allMessageForDelete = \range($firstMessageForDelete, $lastMessageForDelete);
+        $allMessageForDelete   = \range($firstMessageForDelete, $lastMessageForDelete);
 
         foreach (\array_chunk($allMessageForDelete, 40) as $ids) {
             yield $this->MadelineProto->channels->deleteMessages([
-                'channel' => $this->getUpdate(),
+                'channel' => $this->MadelineProto->update->getUpdate(),
                 'id'      => $ids,
             ]);
             yield $this->MadelineProto->sleep(\mt_rand(1, 3));
@@ -113,7 +113,7 @@ final class DeletemessagesPlugin extends AdminPlugin
      */
     private function isChannelOrSupergroup(): \Generator
     {
-        $type = yield $this->MadelineProto->getInfo($this->getUpdate())['type'];
+        $type = yield $this->MadelineProto->getInfo($this->MadelineProto->update->getUpdate())['type'];
 
         return $type === 'supergroup' || $type === 'channel';
     }

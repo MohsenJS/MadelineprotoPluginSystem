@@ -43,10 +43,10 @@ final class HashPlugin extends AdminPlugin
         $message = $this->getHash($text);
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->getUpdate(),
+            'peer'            => $this->MadelineProto->update->getUpdate(),
             'message'         => $message,
             'parse_mode'      => 'Markdown',
-            'reply_to_msg_id' => $this->getMessageId(),
+            'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
     }
 
