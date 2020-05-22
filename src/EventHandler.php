@@ -37,7 +37,7 @@ final class EventHandler extends \danog\MadelineProto\EventHandler
     }
 
     /**
-     * Undocumented function
+     * Load all plugins.
      *
      * @return \Generator
      */
