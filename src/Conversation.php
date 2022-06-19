@@ -2,118 +2,114 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS;
+namespace OxMohsen;
 
-use Amp\File;
+use danog\MadelineProto\Db\DbArray;
 
 final class Conversation
 {
     /**
      * Conversation data.
      *
-     * @var array
+     * @var DbArray<string>
      */
-    private $data = [];
+    private $data;
 
     /**
      * Plugin name.
      *
      * @var string
      */
-    private $plugin = '';
+    private $plugin;
 
     /**
      * user id.
      *
      * @var int
      */
-    private $user_id = 0;
+    private $user_id;
+
+    /**
+     * chat id.
+     *
+     * @var int
+     */
+    private $chat_id;
 
     /**
      * Conversation constructor to initialize a new conversation.
      *
-     * @param int    $user_id
-     * @param string $plugin
+     * @param DbArray $data    db $data variables in `\OxMohsen\PluginEventHandler`
+     * @param int     $user_id id of user that want to start the conversation
+     * @param int     $chat_id id of chat that belong this conversation
+     * @param string  $plugin  plugin name that belong this conversation
      */
-    public function __construct(int $user_id, string $plugin = '')
+    public function __construct(DbArray &$data, int $user_id, int $chat_id, string $plugin = '')
     {
         $this->user_id = $user_id;
+        $this->chat_id = $chat_id;
         $this->plugin  = $plugin;
+        $this->data    = &$data;
     }
 
     /**
      * Start the Conversation.
-     *
-     * @return \Generator
      */
     public function start(): \Generator
     {
-        if (yield File\exists(Config::DATA_PATH . 'Conversation.data')) {
-            $this->data = \unserialize(yield File\get(Config::DATA_PATH . 'Conversation.data'));
+        $haveConversation = yield $this->haveConversation();
+        if (! $haveConversation) {
+            $this->update(null);
         }
     }
 
     /**
      * Store the user note in the conversation data.
-     *
-     * @param mixed $note
-     *
-     * @return \Generator
      */
-    public function update($note): \Generator
+    public function update(mixed $note): void
     {
-        $this->data[$this->user_id] = ['plugin' => $this->plugin, 'note' => $note];
-        yield $this->save();
+        $note = json_encode($note, JSON_HEX_AMP | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT);
+
+        $this->data["{$this->chat_id}|{$this->user_id}"] = "plugin={$this->plugin}&note={$note}";
     }
 
     /**
      * Delete the current user conversation.
-     *
-     * @return \Generator
      */
-    public function stop(): \Generator
+    public function stop(): void
     {
-        unset($this->data[$this->user_id]);
-        yield $this->save();
+        unset($this->data["{$this->chat_id}|{$this->user_id}"]);
     }
 
     /**
      * Check if the conversation exists.
-     *
-     * @return bool
      */
-    public function haveConversation(): bool
+    public function haveConversation(): \Generator
     {
-        return isset($this->data[$this->user_id]);
+        return yield $this->data->isset("{$this->chat_id}|{$this->user_id}");
+    }
+
+    public function getSavedData(): \Generator
+    {
+        $dbData = yield $this->data["{$this->chat_id}|{$this->user_id}"];
+        parse_str($dbData, $savedData);
+
+        return $savedData;
     }
 
     /**
      * Retrieve the saved user note.
-     *
-     * @return mixed|null
      */
-    public function getSavedNote()
+    public function getSavedNote(): \Generator
     {
-        return $this->data[$this->user_id]['note'] ?? null;
+        return json_decode((yield $this->getSavedData())['note'], true);
     }
 
     /**
      * Retrieve the saved plugin name.
-     *
-     * @return string
      */
-    public function getSavedPlugin(): string
+    public function getSavedPlugin(): \Generator
     {
-        return $this->data[$this->user_id]['plugin'] ?? '';
-    }
-
-    /**
-     * Save the conversation data to local file.
-     *
-     * @return \Generator
-     */
-    private function save(): \Generator
-    {
-        yield File\put(Config::DATA_PATH . 'Conversation.data', \serialize($this->data));
+        return (yield $this->getSavedData())['plugin'];
     }
 }

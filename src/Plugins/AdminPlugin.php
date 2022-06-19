@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS\Plugins;
+namespace OxMohsen\Plugins;
 
 abstract class AdminPlugin extends Plugin
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS\Console;
+namespace OxMohsen\Console;
 
-use MohsenJS\Config;
+use OxMohsen\Config;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,7 +39,7 @@ final class ListPluginCommand extends Command
     protected function getAllPlugins(): array
     {
         $allPlugins = [];
-        foreach ([Config::PLUGIN_PATH . 'AdminPlugins', Config::PLUGIN_PATH . 'UserPlugins'] as $path) {
+        foreach ([Config::PLUGIN_PATH.'AdminPlugins', Config::PLUGIN_PATH.'UserPlugins'] as $path) {
             $index = 0;
             $files = new \RegexIterator(
                 new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)),
@@ -47,7 +47,7 @@ final class ListPluginCommand extends Command
             );
 
             foreach ($files as $file) {
-                $allPlugins[$index][] = \strtolower(\substr($file->getFilename(), 0, -10));
+                $allPlugins[$index][] = strtolower(substr($file->getFilename(), 0, -10));
                 ++$index;
             }
         }

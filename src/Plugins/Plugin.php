@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS\Plugins;
+namespace OxMohsen\Plugins;
 
-use MohsenJS\EventHandler;
+use OxMohsen\PluginEventHandler;
 
 abstract class Plugin
 {
     /**
      * MadelineProto object.
      *
-     * @var EventHandler
+     * @var PluginEventHandler
      */
     protected $MadelineProto;
 
@@ -60,25 +60,19 @@ abstract class Plugin
 
     /**
      * Constructor.
-     *
-     * @param EventHandler $MadelineProto
      */
-    public function __construct(EventHandler $MadelineProto)
+    public function __construct(PluginEventHandler &$MadelineProto)
     {
-        $this->MadelineProto = $MadelineProto;
+        $this->MadelineProto = &$MadelineProto;
     }
 
     /**
      * Execute plugin.
-     *
-     * @return \Generator
      */
     abstract public function execute(): \Generator;
 
     /**
      * Get plugin name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -87,8 +81,6 @@ abstract class Plugin
 
     /**
      * Get plugin description.
-     *
-     * @return string
      */
     public function getDescription(): string
     {
@@ -97,8 +89,6 @@ abstract class Plugin
 
     /**
      * Get plugin pattern.
-     *
-     * @return string
      */
     public function getPattern(): string
     {
@@ -107,8 +97,6 @@ abstract class Plugin
 
     /**
      * Get plugin usage.
-     *
-     * @return string
      */
     public function getUsage(): string
     {
@@ -118,9 +106,7 @@ abstract class Plugin
     /**
      * Set the results of regex pattern.
      *
-     * @param string[]|null $matches
-     *
-     * @return void
+     * @param null|string[] $matches
      */
     public function setMatches(?array $matches): void
     {
@@ -139,8 +125,6 @@ abstract class Plugin
 
     /**
      * Check if plugin is enabled.
-     *
-     * @return bool
      */
     public function isEnabled(): bool
     {
