@@ -61,6 +61,7 @@ The project can:
 - Async plugins.
 - Regex pattern for plugins.
 - Conversation feature.
+- [new update helper](#new-update-helper)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -122,6 +123,34 @@ You'll need Git and composer.
 ### use through browser.
 After installation and configuration, create a zip of the project contents and transfer it to your host.
 extract the zip and open the folder url in your browser.
+
+### new update helper
+in this project, you can simply access MadelineProto update in plugin via update helper.
+it's just need to use
+   ```php
+   $this->MadelineProto->update->getUpdate()->get('DOT.INDEX.SEPARATOR');
+   ```
+in your plugin class. for example if you want to access `$update['message']['media']`, you can use
+   ```php
+   $this->MadelineProto->update->getUpdate()->get('message.media');
+   ```
+if helper can find it, media will be returned otherwise `null` will be returned.
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+## Plugin list
+
+| Plugin Usage | Description | Admin Only? |
+| :--- | :--- | :---: |
+| !broadcast | send a message to all bot chats. | **YES** |
+| !phpdoc "function" | send php documentation of target function. | **YES** |
+| !delmsgs 100 | delete some messages from supergroups or channel. | **YES** |
+| !hash "string" | send the md5, sha1, sha256, sha512 hash of the string. | **YES** |
+| !logout | terminate the robot session. | **YES** |
+| !restart | forcefully restart and apply changes. (Only work if running via web) | **YES** |
+| !shutdown | shut the bot down. | **YES** |
+| !generatepassword | send strong password. | **NO** |
+| !help | send plugins usage. | **NO** |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
