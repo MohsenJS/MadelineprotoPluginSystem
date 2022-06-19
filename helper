@@ -1,11 +1,11 @@
 #!/usr/bin/env php
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__.'/vendor/autoload.php';
 
-use MohsenJS\Console\ListPluginCommand;
-use MohsenJS\Console\MakePluginCommand;
-use MohsenJS\Console\RemovePluginCommand;
+use OxMohsen\Console\ListPluginCommand;
+use OxMohsen\Console\MakePluginCommand;
+use OxMohsen\Console\RemovePluginCommand;
 use Symfony\Component\Console\Application;
 
 if (PHP_SAPI !== 'cli') {

@@ -1,21 +1,32 @@
 {
-    "name": "mohsenjs/madelineproto-plugin-system",
+    "name": "oxmohsen/madelineproto-plugin-system",
     "description": "plugin system for MadelineProto",
     "type": "project",
     "require": {
         "symfony/console": "^5.0",
-        "danog/madelineproto": "^5.1"
+        "danog/madelineproto": "^7",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*",
+        "php": ">=8",
+        "voku/arrayy": "^7.9"
     },
     "autoload": {
         "psr-4": {
-            "MohsenJS\\": "src/"
-        }
+            "OxMohsen\\": "src/",
+            "OxMohsen\\Plugins\\": "Plugins/"
+        },
+        "files": ["Config.php"]
     },
     "license": "MIT",
     "authors": [
         {
-            "name": "MohsenJS",
-            "email": "mohsenjs@protonmail.com"
+            "name": "Mohsen Falakedin",
+            "email": "oxmohsen@oxmohsen.ir"
         }
-    ]
+    ],
+    "scripts": {
+        "post-install-cmd": [
+            "php -r \"copy('Config-example.php', 'Config.php');\""
+        ]
+    }
 }

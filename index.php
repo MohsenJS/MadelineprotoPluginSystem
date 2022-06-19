@@ -2,13 +2,19 @@
 
 declare(strict_types=1);
 
-use MohsenJS\Tools;
-use MohsenJS\Config;
-use MohsenJS\EventHandler;
-use danog\MadelineProto\API;
+use OxMohsen\Tools;
+use OxMohsen\Config;
+use OxMohsen\PluginEventHandler;
 
-require __DIR__ . '/vendor/autoload.php';
+/**
+ * load library's.
+ */
+require __DIR__.'/vendor/autoload.php';
+
+/**
+ * load madelineproto $setting.
+ */
+require __DIR__.'/Setting.php';
 
 Tools::checkDataPath();
-$MadelineProto = new API(Config::DATA_PATH . Config::SESSION_NAME, Config::SETTINGS);
-$MadelineProto->startAndLoop(EventHandler::class);
+PluginEventHandler::startAndLoop(Config::DATA_PATH.Config::SESSION_NAME, $settings);

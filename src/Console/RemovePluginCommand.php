@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS\Console;
+namespace OxMohsen\Console;
 
-use MohsenJS\Tools;
-use MohsenJS\Config;
+use OxMohsen\Tools;
+use OxMohsen\Config;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Question\Question;
@@ -63,8 +63,6 @@ final class RemovePluginCommand extends Command
 
     /**
      * Get plugin name from user.
-     *
-     * @return Question
      */
     protected function getPluginClassName(): Question
     {
@@ -80,12 +78,10 @@ final class RemovePluginCommand extends Command
 
     /**
      * Get plugin role from user.
-     *
-     * @return Question
      */
     protected function getPluginRole(): Question
     {
-        $question =  new ChoiceQuestion('Please select plugin role (defaults to Admin)', ['Admin', 'User'], 0);
+        $question = new ChoiceQuestion('Please select plugin role (defaults to Admin)', ['Admin', 'User'], 0);
         $question->setErrorMessage('"%s" is not a valid role.');
 
         return $question;
@@ -93,23 +89,18 @@ final class RemovePluginCommand extends Command
 
     /**
      * Remove plugin file with related info.
-     *
-     * @param string $name
-     * @param string $role
-     *
-     * @return bool
      */
     protected function removePluginFile(string $name, string $role): bool
     {
         $className = Tools::generateClassName($name);
-        $fileName  = Config::PLUGIN_PATH . $role . 'Plugins/' . $className . '.php';
+        $fileName  = Config::PLUGIN_PATH.$role.'Plugins/'.$className.'.php';
 
         if (! Validator::pluginFileExists($fileName, $role)) {
             throw new RuntimeException(
-                \sprintf('File "%s" doesn\'t exists.', $fileName)
+                sprintf('File "%s" doesn\'t exists.', $fileName)
             );
         }
 
-        return \unlink($fileName);
+        return unlink($fileName);
     }
 }

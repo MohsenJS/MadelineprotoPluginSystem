@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS\Plugins\%sPlugins;
+namespace OxMohsen\Plugins\%sPlugins;
 
-use MohsenJS\Plugins\%sPlugin;
+use OxMohsen\Plugins\%sPlugin;
 
 final class %s extends %sPlugin
 {

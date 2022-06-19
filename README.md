@@ -8,7 +8,7 @@ a plugin system for [MadelineProto](https://github.com/danog/MadelineProto)
 clone this repository using git:
 
 ```bash
-$ git clone https://github.com/MohsenJS/MadelineprotoPluginSystem.git
+$ git clone https://github.com/OxMohsen/MadelineprotoPluginSystem.git
 ```
 
 go to the `MadelineprotoPluginSystem` folder:

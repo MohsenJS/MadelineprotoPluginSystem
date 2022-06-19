@@ -2,33 +2,31 @@
 
 declare(strict_types=1);
 
-namespace MohsenJS;
+namespace OxMohsen;
+
+use Arrayy\Arrayy as ArrayHelper;
 
 final class Update
 {
     /**
      * incoming update.
      *
-     * @var array
+     * @var ArrayHelper
      */
-    public $update = [];
+    public $update;
 
     /**
      * Update constructor.
-     *
-     * @param array $update
      */
     public function __construct(array $update)
     {
-        $this->update = $update;
+        $this->update = new ArrayHelper($update);
     }
 
     /**
      * Get current update.
-     *
-     * @return array
      */
-    public function getUpdate(): array
+    public function getUpdate(): ArrayHelper
     {
         return $this->update;
     }
@@ -36,81 +34,74 @@ final class Update
     /**
      * Get message text.
      *
-     * @return string message text if find it, `empty string` otherwise.
+     * @return string message text if find it, `empty string` otherwise
      */
     public function getText(): string
     {
-        return (string) ($this->update['message']['message'] ?? '');
+        return (string) ($this->update->get('message.message') ?? '');
     }
 
     /**
-     * Get from id.
+     * get ID of the sender of the message.
      *
-     * @return int from id if find it, `zero` otherwise.
+     * @return int from id if find it, `zero` otherwise
      */
     public function getFromId(): int
     {
-        return (int) ($this->update['message']['from_id'] ?? 0);
+        return match ($this->update->get('message.from_id._')) {
+            'peerChannel' => (int) ('-100'.$this->update->get('message.from_id.channel_id') ?? 0),
+            'peerChat'    => (int) (-1 * $this->update->get('message.from_id.chat_id')      ?? 0),
+            'peerUser'    => (int) ($this->update->get('message.from_id.user_id')           ?? 0),
+            default       => 0,
+        };
     }
 
     /**
-     * Get chat id.
+     * get the id of the chat where this message was sent.
      *
-     * @return int chat id if find it, `zero` otherwise.
+     * @return int chat id if find it, `zero` otherwise
      */
     public function getChatId(): int
     {
-        if (isset($this->update['message']['to_id']['_'])) {
-            switch ($this->update['message']['to_id']['_']) {
-                case 'peerChannel':
-                    return (int) ('-100' . $this->update['message']['to_id']['channel_id'] ?? 0);
-                case 'peerChat':
-                    return (int) (-1 * $this->update['message']['to_id']['chat_id'] ?? 0);
-                case 'peerUser':
-                    return (int) ($this->update['message']['to_id']['user_id'] ?? 0);
-            }
-        }
-
-        return 0;
+        return match ($this->update->get('message.from_id._')) {
+            'peerChannel' => (int) ('-100'.$this->update->get('message.peer_id.channel_id') ?? 0),
+            'peerChat'    => (int) (-1 * $this->update->get('message.peer_id.chat_id')      ?? 0),
+            'peerUser'    => (int) ($this->update->get('message.peer_id.user_id')           ?? 0),
+            default       => 0,
+        };
     }
 
     /**
-     * get message id.
+     * get ID of the message.
      *
-     * @return int message id if find it, `zero` otherwise.
+     * @return int message id if find it, `zero` otherwise
      */
     public function getMessageId(): int
     {
-        return (int) ($this->update['message']['id'] ?? 0);
+        return (int) ($this->update->get('message.id') ?? 0);
     }
 
     /**
-     * get reply message id.
+     * get ID of message to which this message is replying.
      *
-     * @return int reply message id if find it, `zero` otherwise.
+     * @return int reply message id if find it, `zero` otherwise
      */
     public function getReplyMessageId(): int
     {
-        return (int) ($this->update['message']['reply_to_msg_id'] ?? 0);
+        return (int) ($this->update->get('message.reply_to.reply_to_msg_id') ?? 0);
     }
 
     /**
      * Get media type.
      *
-     * Media type could be `Empty`, `Photo`, `Geo`, `Contact`, `Unsupported`, `Document`, `WebPage`,
-     * `Venue`, `Game`, `Invoice`, `GeoLive` and `Poll`.
+     * Media type could be `Empty`, `Photo`, `Geo`, `Contact`, `Unsupported`, `Document`,
+     * `WebPage`, `Venue`, `Game`, `Invoice`, `GeoLive`, `Poll` and `Dice`.
      *
-     * @return string|null media type if find it, `null` otherwise.
+     * @return string media type if find it, `empty string` otherwise
      */
     public function getMediaType(): ?string
     {
-        if (isset($this->update['message']['media']['_'])) {
-            $type = \substr($this->update['message']['media']['_'], 12);
-
-            return $type !== false ? $type : null;
-        }
-
-        return null;
+        return substr($this->update->get('message.media._') ?? '', 12);
     }
 
     /**
@@ -118,27 +109,25 @@ final class Update
      *
      * Document type could be `Audio`, `Video`, `Sticker` and `Gif`.
      *
-     * @return string|null document type if find it, `null` otherwise.
+     * @return null|string document type if find it, `null` otherwise
      */
     public function getDocumentType(): ?string
     {
-        if (
-            ! isset($this->update['message']['media']['document']['attributes']) &&
-            ! \is_array($this->update['message']['media']['document']['attributes'])
-        ) {
-            return null;
-        }
+        $attributes = $this->update->get('message.media.document.attributes') ?? [];
 
-        $type = [
-            'documentAttributeAudio'    => 'Audio',
-            'documentAttributeVideo'    => 'Video',
-            'documentAttributeSticker'  => 'Sticker',
-            'documentAttributeAnimated' => 'Gif',
-        ];
-
-        foreach ($this->update['message']['media']['document']['attributes'] as $attribute) {
-            if (isset($attribute['_']) && isset($type[$attribute['_']])) {
-                return $type[$attribute['_']];
+        /**
+         * @var \Arrayy\Arrayy $attribute
+         */
+        foreach ($attributes as $attribute) {
+            $type = match ($attribute->get('_')) {
+                'documentAttributeAudio'    => 'Audio',
+                'documentAttributeVideo'    => 'Video',
+                'documentAttributeSticker'  => 'Sticker',
+                'documentAttributeAnimated' => 'Gif',
+                default                     => '',
+            };
+            if ('' !== $type) {
+                return $type;
             }
         }
 
@@ -151,16 +140,16 @@ final class Update
      * Message type could be `Text`, `Photo`, `Audio`, `Video`, `Document`, `Contact`, `Gif`, `Sticker`,
      * `Poll`, `Geo`, `GeoLive`, `WebPage`, `Game`, `Venue`, `Invoice` and `Unsupported`
      *
-     * @return string|null message type if find it, `null` otherwise.
+     * @return null|string message type if find it, `null` otherwise
      */
     public function getMessageType(): ?string
     {
         $type = $this->getMediaType();
-        if ($type === 'Empty' || $type === null) {
+        if ('Empty' === $type || '' === $type) {
             $type = 'Text';
         }
 
-        if ($type === 'Document' && $this->getDocumentType() !== null) {
+        if ('Document' === $type && null !== $this->getDocumentType()) {
             $type = $this->getDocumentType();
         }
 
