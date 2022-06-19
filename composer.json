@@ -17,7 +17,7 @@
         },
         "files": ["Config.php"]
     },
-    "license": "MIT",
+    "license": "GPL3",
     "authors": [
         {
             "name": "Mohsen Falakedin",
