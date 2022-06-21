@@ -63,7 +63,7 @@ final class Update
      */
     public function getChatId(): int
     {
-        return match ($this->update->get('message.from_id._')) {
+        return match ($this->update->get('message.peer_id._')) {
             'peerChannel' => (int) ('-100'.$this->update->get('message.peer_id.channel_id') ?? 0),
             'peerChat'    => (int) (-1 * $this->update->get('message.peer_id.chat_id')      ?? 0),
             'peerUser'    => (int) ($this->update->get('message.peer_id.user_id')           ?? 0),

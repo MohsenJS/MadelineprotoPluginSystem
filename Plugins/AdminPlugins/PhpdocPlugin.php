@@ -54,7 +54,7 @@ final class PhpdocPlugin extends AdminPlugin
         $fileHandler->close();
 
         yield $this->MadelineProto->messages->sendMedia([
-            'peer'  => $this->MadelineProto->update->getChatId(),
+            'peer'  => $this->MadelineProto->update->getUpdate()->toArray(),
             'media' => [
                 '_'          => 'inputMediaUploadedDocument',
                 'file'       => $fileName,

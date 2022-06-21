@@ -40,12 +40,15 @@ final class DeletemessagesPlugin extends AdminPlugin
     public function execute(): \Generator
     {
         $message      = 'i can\'t delete message here.';
-        $canDelete    = yield $this->canDeleteMessage();
-        $isSupergroup = yield $this->MadelineProto->isSupergroup($this->MadelineProto->update->getChatId());
+        $canDelete    = false;
+        $isSupergroup = yield $this->isChannelOrSupergroup();
+        if (true === $isSupergroup) {
+            $canDelete = yield $this->canDeleteMessage();
+        }
 
         if ($canDelete && $isSupergroup) {
             yield $this->MadelineProto->messages->sendMessage([
-                'peer'    => $this->MadelineProto->update->getChatId(),
+                'peer'    => $this->MadelineProto->update->getUpdate()->toArray(),
                 'message' => 'Deleting messages ...',
             ]);
             $countOfDeletedMessages = (int) yield $this->deleteMessages();
@@ -54,7 +57,7 @@ final class DeletemessagesPlugin extends AdminPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->MadelineProto->update->getChatId(),
+            'peer'            => $this->MadelineProto->update->getUpdate()->toArray(),
             'message'         => $message,
             'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
@@ -68,8 +71,8 @@ final class DeletemessagesPlugin extends AdminPlugin
     private function canDeleteMessage(): \Generator
     {
         $channelParticipant = yield $this->MadelineProto->channels->getParticipant([
-            'channel' => $this->MadelineProto->update->getChatId(),
-            'user_id' => 'me',
+            'channel'     => $this->MadelineProto->update->getUpdate()->toArray(),
+            'participant' => 'me',
         ]);
 
         $type      = $channelParticipant['participant']['_']                               ?? null;
@@ -97,7 +100,7 @@ final class DeletemessagesPlugin extends AdminPlugin
 
         foreach (array_chunk($allMessageForDelete, 40) as $ids) {
             yield $this->MadelineProto->channels->deleteMessages([
-                'channel' => $this->MadelineProto->update->getChatId(),
+                'channel' => $this->MadelineProto->update->getUpdate()->toArray(),
                 'id'      => $ids,
             ]);
 
@@ -105,5 +108,17 @@ final class DeletemessagesPlugin extends AdminPlugin
         }
 
         return $inputNumber;
+    }
+
+    /**
+     * Checks if current chat is `supergroup` or `channel`.
+     *
+     * @return \Generator `true` if the current chat is `supergroup` or `channel`, `false` otherwise
+     */
+    private function isChannelOrSupergroup(): \Generator
+    {
+        $type = yield $this->MadelineProto->getInfo($this->MadelineProto->update->getUpdate()->toArray())['type'];
+
+        return 'supergroup' === $type || 'channel' === $type;
     }
 }

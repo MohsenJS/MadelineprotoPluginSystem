@@ -65,7 +65,7 @@ final class BroadcastPlugin extends AdminPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $chat_id,
+            'peer'            => $this->MadelineProto->update->getUpdate()->toArray(),
             'message'         => $message,
             'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
@@ -103,6 +103,7 @@ final class BroadcastPlugin extends AdminPlugin
     private function checkStep(): \Generator
     {
         $note = yield $this->conversation->getSavedNote();
+
         if (null === $note) {
             yield $this->conversation->update('getUserMessage');
 
