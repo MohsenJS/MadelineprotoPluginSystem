@@ -46,7 +46,7 @@ final class HelpPlugin extends UserPlugin
         }
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->MadelineProto->update->getChatId(),
+            'peer'            => $this->MadelineProto->update->getUpdate()->toArray(),
             'message'         => $message,
             'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
             'parse_mode'      => 'HTML',

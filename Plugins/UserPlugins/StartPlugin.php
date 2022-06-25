@@ -40,7 +40,7 @@ final class StartPlugin extends UserPlugin
     public function execute(): \Generator
     {
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->MadelineProto->update->getChatId(),
+            'peer'            => $this->MadelineProto->update->getUpdate()->toArray(),
             'message'         => 'Hi, please send <code>!help</code> to see my ability.',
             'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
             'parse_mode'      => 'HTML',

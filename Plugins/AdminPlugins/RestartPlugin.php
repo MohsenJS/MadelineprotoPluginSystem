@@ -49,7 +49,7 @@ final class RestartPlugin extends AdminPlugin
         yield $this->MadelineProto->restart();
 
         yield $this->MadelineProto->messages->sendMessage([
-            'peer'            => $this->MadelineProto->update->getChatId(),
+            'peer'            => $this->MadelineProto->update->getUpdate()->toArray(),
             'message'         => 'The bot successfully restarted.',
             'reply_to_msg_id' => $this->MadelineProto->update->getMessageId(),
         ]);
